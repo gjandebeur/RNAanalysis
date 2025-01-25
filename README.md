@@ -1,6 +1,7 @@
 full workflow to sequence RNA from oxford nanopore using dorado and run differential analysis using nanopolish and nanocompore
 
 download the up to date dorado from the dorado github, pull onto OSCER using wget.
+
 **https://github.com/nanoporetech/dorado**
 
 run the following command for the basecall step, ensure correct model and directory that data is pulling from.
@@ -14,13 +15,13 @@ change to the correct working directory (use cd .. to go up a level, cd /path/to
     > /path/to/output/file.bam
 
 
-#dependencies needed (input into virtual env for ease)
-module load GCC
-module load PyTorch
-module load FlexiBLAS/3.3.1-GCC-12.3.0  
-module load FFmpeg/4.4.2-GCCcore-11.3.0 
-module load HTSlib
-module load protobuf
+        #dependencies potentially needed (input into virtual env for ease)
+        module load GCC
+        module load PyTorch
+        module load FlexiBLAS/3.3.1-GCC-12.3.0  
+        module load FFmpeg/4.4.2-GCCcore-11.3.0 
+        module load HTSlib
+        module load protobuf
 
 next demux samples to label unique reads with barcode
 
@@ -42,9 +43,10 @@ next align the basecalled/demux'd data with the reference genome from gencode
     "/path/to/demuxed/file/directory/pick/largest/one.bam" > /output/path/aligned.bam
 
 next run dorado summary to create summary file for downstream analysis.
-       dorado summary \
-       /path/to/aligned/output.bam \
-       > /path/to/output/summary.txt
+
+        dorado summary \
+        /path/to/aligned/output.bam \
+        > /path/to/output/summary.txt
 
 With Dorado completed, use the following to move from unreadable bam into a readable transcript (AUCGs)
 
@@ -53,7 +55,8 @@ With Dorado completed, use the following to move from unreadable bam into a read
      /path/to/the/aligned.bam | bcftools call -c -o /path/to/variants/file.vcf
 
 zip up the vcf file
-    bgzip -c /path/to/variants/file.vcf/ > /path/to/variants.vcf.gz
+
+        bgzip -c /path/to/variants/file.vcf/ > /path/to/variants.vcf.gz
 
 to create consensus sequence, 
 
@@ -64,14 +67,16 @@ to create consensus sequence,
     > /path/to/output/consensus/sequence.fq
 
 Last step is converting from T to U since this focuses on RNA (bam doesn't write Uracil, only Thymine)
+
       sed 's/T/U/g' /path/to/output/consensus/sequence.fq > /path/to/output/rna/consensus/sequence.fq
 
 Next steps are to take the Dorado files and run using nanopolish to index and eventalign for modifications.
-    **https://github.com/jts/nanopolish**
 
-source /path/to/conda/env.sh
-conda activate $ENV_PATH
-conda new (set up nanopolish environment for dependencies)
+**https://github.com/jts/nanopolish**
+
+        source /path/to/conda/env.sh
+        conda activate $ENV_PATH
+        conda new (set up nanopolish environment for dependencies)
 
 Start the nanopolish with initial prep,
 
@@ -103,9 +108,13 @@ After nanopolish indexes (takes a while) it will generate .fai and .gzi files fo
     /path/to/new/file/eventalign.txt
 
 Install nanocompore & dependencies into a virtual environment or conda
-        **https://github.com/tleonardi/nanocompore**
+
+**https://github.com/tleonardi/nanocompore**
+
 additional assistance and syntax
-        **https://nanocompore.rna.rocks/data_preparation/**
+
+**https://nanocompore.rna.rocks/data_preparation/**
+
     nanocompore eventalign_collapse -t 6 -i \
     /path/to/new/file/eventalign.txt \
     -o /path/to/output/collapsed.eventalign.tsv
