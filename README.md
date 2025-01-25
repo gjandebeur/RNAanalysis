@@ -1,4 +1,4 @@
-full workflow to sequence RNA from oxford nanopore using dorado (Basecall, demux, align, summary)
+full workflow to sequence RNA from oxford nanopore using dorado and run differential analysis using nanopolish and nanocompore
 
 download the up to date dorado from the dorado github, pull onto OSCER using wget.
 **https://github.com/nanoporetech/dorado**
@@ -103,7 +103,9 @@ After nanopolish indexes (takes a while) it will generate .fai and .gzi files fo
     /path/to/new/file/eventalign.txt
 
 Install nanocompore & dependencies into a virtual environment or conda
-
+        **https://github.com/tleonardi/nanocompore**
+additional assistance and syntax
+        **https://nanocompore.rna.rocks/data_preparation/**
     nanocompore eventalign_collapse -t 6 -i \
     /path/to/new/file/eventalign.txt \
     -o /path/to/output/collapsed.eventalign.tsv
