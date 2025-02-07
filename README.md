@@ -1,10 +1,10 @@
-full workflow to sequence RNA from oxford nanopore using dorado and run differential analysis using nanopolish and nanocompore
+full workflow to sequence RNA from Oxford Nanopore Flowcells using Dorado/Minimap2 and running differential analysis using nanopolish and nanocompore.
+Will update as the workflow progresses, aiming to add m6anet & Xpore next.
 
-download the up to date dorado from the dorado github, pull onto OSCER using wget.
 
 **https://github.com/nanoporetech/dorado**
 
-run the following command for the basecall step, ensure correct model and directory that data is pulling from.
+run the following command for the basecall step, ensure the correct model and directory that data is pulling from.
 change to the correct working directory (use cd .. to go up a level, cd /path/to/file to go down)
 
     /path/to/updated/bin/dorado \
