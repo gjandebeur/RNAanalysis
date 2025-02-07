@@ -36,17 +36,35 @@ next demux samples to label unique reads with barcode
     echo "Dorado demux completed!"
 
 next align the basecalled/demux'd data with the reference genome from gencode
+alignment can be done with dorado, but use minimap2 for downstream analysis purposes.
 
-    /path/to/dorado/bin/dorado \
-    aligner \
-    "/path/to/reference/gencome.fa" \
-    "/path/to/demuxed/file/directory/pick/largest/one.bam" > /output/path/aligned.bam
+
 
 next run dorado summary to create summary file for downstream analysis.
+**https://github.com/benedictpaten/marginAlign**
+marginAlign has built in minimap, and will also be used
 
-        dorado summary \
-        /path/to/aligned/output.bam \
-        > /path/to/output/summary.txt
+    -ax splice -uf -k14 "/path/to/reference/genome.fa"     "/path/to/basecalled.fastq" \
+    > "path/to/minimap/aligned.sam"
+
+prep the data to run statistical tests
+        samtools view -h \
+        /path/to/minimap/aligned.sam \
+        | awk '$10 != "*"'  | samtools view -b -o             /path/to/filtered/file.bam 
+  
+To run marginStats you will need Python2.7.15 
+create a virtual environment/conda with this before running.
+
+         marginStats \
+        --localAlignment /path/to/filtered.bam/ \
+        /path/to/uniqueheaders.fastq/ \
+        /path/to/reference/genome.fa \
+        --readIdentity --alignmentIdentity \ 
+        --readCoverage \
+        --mismatchesPerAlignedBase \
+        --deletionsPerReadBase \
+        --insertionsPerReadBase \
+        --readLength --printValuePerReadAlignment 
 
 With Dorado completed, use the following to move from unreadable bam into a readable transcript (AUCGs)
 
