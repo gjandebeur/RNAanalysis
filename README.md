@@ -48,6 +48,7 @@ marginAlign has built in minimap, and will also be used
     > "path/to/minimap/aligned.sam"
 
 prep the data to run statistical tests
+       
         samtools view -h \
         /path/to/minimap/aligned.sam \
         | awk '$10 != "*"'  | samtools view -b -o             /path/to/filtered/file.bam 
@@ -65,6 +66,8 @@ create a virtual environment/conda with this before running.
         --deletionsPerReadBase \
         --insertionsPerReadBase \
         --readLength --printValuePerReadAlignment 
+        
+With marginstats output, run substitutionplot.R and Identity.R scripts
 
 With Dorado completed, use the following to move from unreadable bam into a readable transcript (AUCGs)
 
