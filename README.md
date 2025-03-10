@@ -1,6 +1,6 @@
 full workflow to sequence RNA from Oxford Nanopore Flowcells using Dorado/Minimap2 and running differential analysis using nanopolish and nanocompore.
-Will update as the workflow progresses.
 **Currently set for RNA004 Datasets on experimental models**
+**recently updated to include m6anet and xpore workflows for RNA004**
 
 **https://github.com/nanoporetech/dorado**
 
@@ -148,6 +148,7 @@ To run the differential expression you will need a .yml config file, heres an ex
             method: t-test
             threshold: 0.1
 
-and run xpore using
+and then run Xpore using
+        
         xpore diffmod --config /path/to/the/config/file.yml
         
