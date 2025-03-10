@@ -1,5 +1,6 @@
 full workflow to sequence RNA from Oxford Nanopore Flowcells using Dorado/Minimap2 and running differential analysis using nanopolish and nanocompore.
 **Currently set for RNA004 Datasets on experimental models**
+
 **recently updated to include m6anet and xpore workflows for RNA004**
 
 **https://github.com/nanoporetech/dorado**
