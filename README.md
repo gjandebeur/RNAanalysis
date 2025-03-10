@@ -18,7 +18,9 @@ change to the correct working directory (use cd .. to go up a level, cd /path/to
 alignment can be done with dorado, but minimap2 is preferred for downstream analysis purposes.
 marginAlign has built in minimap, and provides more statistical data (marginalign will need to be run on python2.7)
 **https://github.com/benedictpaten/marginAlign**
-
+**for now here is the path to my installation of minimap2, this will eventually be removed**
+        
+"/ourdisk/hpc/rnafold/gjandebeur/dont_archive/software/marginAlign/submodules/minimap2/minimap2"
     -ax splice -uf -k14 "/path/to/reference/genome.fa"     "/path/to/basecalled.fastq" \
     > "path/to/minimap/aligned.sam"
 
