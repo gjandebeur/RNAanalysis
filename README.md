@@ -1,6 +1,6 @@
 full workflow to sequence RNA from Oxford Nanopore Flowcells using Dorado/Minimap2 and running differential analysis using nanopolish and nanocompore.
-Will update as the workflow progresses, aiming to add m6anet & Xpore next.
-
+Will update as the workflow progresses.
+**Currently set for RNA004 Datasets on experimental models**
 
 **https://github.com/nanoporetech/dorado**
 
@@ -15,29 +15,10 @@ change to the correct working directory (use cd .. to go up a level, cd /path/to
     > /path/to/output/file.bam
 
 
-        #dependencies potentially needed (input into virtual env for ease)
-        module load GCC
-        module load PyTorch
-        module load FlexiBLAS/3.3.1-GCC-12.3.0  
-        module load FFmpeg/4.4.2-GCCcore-11.3.0 
-        module load HTSlib
-        module load protobuf
-
-next demux samples to label unique reads with barcode
-
-    /path/to/dorado/bin/dorado \
-    demux \
-    --kit-name SQK-RPB004 --output-dir /path/to/output/directory/demux/ \ 
-    "/path/to/basecalled/file.bam"
-    if [ $? -ne 0 ]; then
-    echo "Dorado demux failed."
-    exit 1
-    fi
-    echo "Dorado demux completed!"
+        
 
 next align the basecalled/demux'd data with the reference genome from gencode
-alignment can be done with dorado, but use minimap2 for downstream analysis purposes.
-
+alignment can be done with dorado, but minimap2 is preferred for downstream analysis purposes.
 
 
 next run dorado summary to create summary file for downstream analysis.
@@ -46,6 +27,8 @@ marginAlign has built in minimap, and will also be used
 
     -ax splice -uf -k14 "/path/to/reference/genome.fa"     "/path/to/basecalled.fastq" \
     > "path/to/minimap/aligned.sam"
+
+**for -ax splice, it uses spliced alignment. Change to -ax map-ont if an unspliced alignment is needed (for m6anet and Xpore)**
 
 prep the data to run statistical tests
        
@@ -93,63 +76,85 @@ Last step is converting from T to U since this focuses on RNA (bam doesn't write
 
 Next steps are to take the Dorado files and run using nanopolish to index and eventalign for modifications.
 
-**https://github.com/jts/nanopolish**
+**https://github.com/hasindu2008/f5c**
+**f5c is built to be the updated version of nanopolish that allows RNA004 modification detection**
 
         source /path/to/conda/env.sh
         conda activate $ENV_PATH
         conda new (set up nanopolish environment for dependencies)
 
-Start the nanopolish with initial prep,
+Start the f5c nanopolish with initial prep,
 
     samtools sort -O bam -T "label" -o /path/to/aligned/sorted.bam \
     /path/to/aligned/file/wanting/to/be/sorted.bam
 
     samtools index /path/to/aligned/and/sorted.bam
+    also make sure to remove the secondary and supplmentary reads ("filter" them)
 
-    samtools fasta -@ 4 /path/to/original/dorado/basecalled.bam \
-    > /path/to/new/basecalled.fa
-
-last, install pod5 to convert from pod5 to fast5 (nanopolish only reads the old fast5 currently)
+last, install pod5 to convert from pod5 to fast5 (f5c only reads the old fast5, not pod5)
 
     pod5 convert to_fast5 "/path/to/the/pod5/files/pod5/" \
     --output "/path/to/new/directory/for/fast5/"
     
-With library prep done, perform nanopolish index on the sample to rewrite the original ionic current from flowcell for differential analysis
+With library prep done, perform f5c index on the sample to rewrite the original ionic current from the flowcell for differential analysis
 
-    nanopolish index -s /path/to/summary/file/summary.txt \
-    -d /path/to/directory/with/rawdata/fast5/ \
-    /path/to/the/basecalled/original/file/basecalled.fasta
+    /path/to/f5c \
+    index -d "/path/to/the/file/fast5/flowdata.fast5 \
+    /path/to/fastq/basecalled.fastq
 
-After nanopolish indexes (takes a while) it will generate .fai and .gzi files for the .fasta,
+**f5c also allows for m5C detection, but false positive rate seems to be higher than preferred**
+**this is additional but can be skipped in workflow**
+    /path/to/f5c \
+    call-methylation --min-mapq 20 \
+    -r /path/to/basecalled.fastq \
+    -b /path/to/filtered/and/sorted.bam \ 
+    -g /path/to/reference/genome.fa \
+    --pore rna004 > /path/to/output_results.tsv
 
-    nanopolish eventalign --reads /path/to/created/basecalled.fasta \
-    --bam /path/to/the/aligned/and/sorted.bam \
-    --genome /path/to/reference/genome/transcript.fa \
-    --print-read-names --scale-events --samples --min-mapping-quality 10 >
-    /path/to/new/file/eventalign.txt
+    /path/to/f5c \
+    meth-freq -i /path/to/output_results.tsv > /path/to/output_frequency.tsv
 
-Install nanocompore & dependencies into a virtual environment or conda
+**use f5c to run eventalign on the rna004 files**
 
-**https://github.com/tleonardi/nanocompore**
+    /path/to/f5c eventalign --rna \
+    -b /path/to/aligned/and/sorted.bam \
+    -r /path/to/basecalled.fastq \
+    -g /path/to/reference.fa \
+    --kmer-model /path/to/F5C/experimentalrna004/5mer.model \
+    --signal-index --scale-events > /path/to/output/f5cevent.txt
 
-additional assistance and syntax
+**once complete the event file can be run with m6anet**
+**https://github.com/GoekeLab/m6anet**
 
-**https://nanocompore.rna.rocks/data_preparation/**
+        m6anet dataprep --eventalign /path/to/event.txt \
+        --out-dir /path/to/output/directory/ --n_processes 4 
 
-    nanocompore eventalign_collapse -t 6 -i \
-    /path/to/new/file/eventalign.txt \
-    -o /path/to/output/collapsed.eventalign.tsv
+        m6anet inference --input_dir /path/to/input/from/dataprep/ \
+        --out-dir /path/to/m6anet/inference/directory/ \
+        --pretrained_model HEK293T_RNA004 --n_processes 4 --num_iterations 1000
 
-Once the following is complete for different variables, ideally with replicates, run sampcomp
+**using the same event.txt file from f5c, run Xpore**
+**https://github.com/GoekeLab/xpore**
 
-    nanocompore sampcomp -1 /path/to/first/collapsed.eventalign.tsv \
-    -2 /path/to/other/variable/collapsed.eventalign.tsv \
-    --fasta /path/to/reference/genome/transcript.fa \
-    --label1 "label" \
-    --label2 "2ndlabel" \
-    --outpath /path/to/directory/for/nanocompore/output/ \
-    --overwrite #this forces it to write over the directory! \
-    --min_coverage 10 
+        xpore dataprep --eventalign /path/to/event.txt \
+        --out_dir /path/to/output/xpore/directory/
 
+To run the differential expression you will need a .yml config file, heres an example
+        notes: Pairwise comparison without replicates with default parameter setting.
 
-    
+    data:
+        KO:
+            rep1: #path/to/the/modification/xporedataprep
+        IVT:
+            rep1: #path/to/the/IVT/xporedataprep
+        
+    out: /path/to/output/location
+
+    method:
+        prefiltering:
+            method: t-test
+            threshold: 0.1
+
+and run xpore using
+        xpore diffmod --config /path/to/the/config/file.yml
+        
