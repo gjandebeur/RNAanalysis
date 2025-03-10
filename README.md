@@ -14,16 +14,9 @@ change to the correct working directory (use cd .. to go up a level, cd /path/to
     --min-qscore 10 #statistical test to rid bad basecalls \
     > /path/to/output/file.bam
 
-
-        
-
-next align the basecalled/demux'd data with the reference genome from gencode
 alignment can be done with dorado, but minimap2 is preferred for downstream analysis purposes.
-
-
-next run dorado summary to create summary file for downstream analysis.
+marginAlign has built in minimap, and provides more statistical data (marginalign will need to be run on python2.7)
 **https://github.com/benedictpaten/marginAlign**
-marginAlign has built in minimap, and will also be used
 
     -ax splice -uf -k14 "/path/to/reference/genome.fa"     "/path/to/basecalled.fastq" \
     > "path/to/minimap/aligned.sam"
