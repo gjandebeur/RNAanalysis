@@ -3,6 +3,15 @@ full workflow to sequence RNA from Oxford Nanopore Flowcells using Dorado/Minima
 
 **https://github.com/nanoporetech/dorado**
 
+**for me, the following modules seemed to be needed to run dorado without errors**
+    
+    module load GCC
+    module load PyTorch
+    module load FlexiBLAS/3.3.1-GCC-12.3.0  
+    module load FFmpeg/4.4.2-GCCcore-11.3.0 
+    module load HTSlib
+    module load protobuf
+    
 run the following command for the basecall step, ensure the correct model and directory that data is pulling from.
 
     /path/to/updated/bin/dorado \
